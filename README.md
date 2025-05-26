@@ -66,9 +66,6 @@ Main interactive framework with full workflow automation
 ### `web_page_debugger.py`  
 Debug tool to analyze website structure and find document links
 
-### `ultimate_opm_processor.py`
-Specialized processor for OPM government memos (example implementation)
-
 ## ⚙️ Configuration
 
 Configurations are saved as JSON files for easy reuse:
