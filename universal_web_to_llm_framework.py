@@ -165,9 +165,9 @@ class UniversalWebToLLMProcessor:
         
         return uploaded_docs
     
-    def embed_all_documents(self):
-        """Move all documents to workspace for embedding"""
-        print(f"\n🧠 Embedding all documents in workspace...")
+    def embed_all_documents(self, batch_size=10):
+        """Move all documents to workspace for embedding in batches"""
+        print(f"\n🧠 Embedding all documents in workspace (batch size: {batch_size})...")
         
         # Get all documents from all folders
         response = self.session.get(f"{self.base_url}/api/v1/documents")
@@ -191,20 +191,70 @@ class UniversalWebToLLMProcessor:
         
         print(f"   📚 Found {len(all_docs)} total documents")
         
-        # Add to workspace
-        payload = {"adds": all_docs}
+        # Process in batches to avoid timeouts
+        total_batches = (len(all_docs) + batch_size - 1) // batch_size
+        successfully_embedded = 0
         
-        try:
-            response = self.session.post(
-                f"{self.base_url}/api/v1/workspace/{self.workspace_slug}/update-embeddings",
-                json=payload,
-                headers={"Content-Type": "application/json"}
-            )
-            response.raise_for_status()
-            print(f"   ✅ All documents embedded in workspace!")
+        for batch_num in range(total_batches):
+            start_idx = batch_num * batch_size
+            end_idx = min(start_idx + batch_size, len(all_docs))
+            batch_docs = all_docs[start_idx:end_idx]
+            
+            print(f"   📦 Processing batch {batch_num + 1}/{total_batches} ({len(batch_docs)} documents)...")
+            
+            payload = {"adds": batch_docs}
+            
+            try:
+                response = self.session.post(
+                    f"{self.base_url}/api/v1/workspace/{self.workspace_slug}/update-embeddings",
+                    json=payload,
+                    headers={"Content-Type": "application/json"},
+                    timeout=120  # Increased timeout for batches
+                )
+                response.raise_for_status()
+                successfully_embedded += len(batch_docs)
+                print(f"   ✅ Batch {batch_num + 1} completed successfully!")
+                
+                # Add delay between batches to be respectful to the server
+                if batch_num < total_batches - 1:  # Don't delay after last batch
+                    print(f"   ⏳ Waiting 3 seconds before next batch...")
+                    time.sleep(3)
+                
+            except requests.exceptions.Timeout:
+                print(f"   ⚠️ Batch {batch_num + 1} timed out - trying smaller batch...")
+                # Try with smaller batches (half size)
+                smaller_batch_size = max(1, len(batch_docs) // 2)
+                
+                for mini_batch_start in range(0, len(batch_docs), smaller_batch_size):
+                    mini_batch_end = min(mini_batch_start + smaller_batch_size, len(batch_docs))
+                    mini_batch = batch_docs[mini_batch_start:mini_batch_end]
+                    
+                    try:
+                        mini_payload = {"adds": mini_batch}
+                        response = self.session.post(
+                            f"{self.base_url}/api/v1/workspace/{self.workspace_slug}/update-embeddings",
+                            json=mini_payload,
+                            headers={"Content-Type": "application/json"},
+                            timeout=60
+                        )
+                        response.raise_for_status()
+                        successfully_embedded += len(mini_batch)
+                        print(f"   ✅ Mini-batch with {len(mini_batch)} docs completed!")
+                        time.sleep(2)
+                        
+                    except Exception as e:
+                        print(f"   ❌ Mini-batch failed: {e}")
+                        
+            except Exception as e:
+                print(f"   ❌ Batch {batch_num + 1} failed: {e}")
+        
+        print(f"   🎯 Successfully embedded {successfully_embedded}/{len(all_docs)} documents")
+        
+        if successfully_embedded > 0:
+            print(f"   ✅ Embedding process completed!")
             return True
-        except Exception as e:
-            print(f"   ❌ Embedding failed: {e}")
+        else:
+            print(f"   ❌ No documents were successfully embedded")
             return False
     
     def test_knowledge_base(self):
