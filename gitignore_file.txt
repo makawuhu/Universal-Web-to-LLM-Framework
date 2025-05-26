@@ -1,0 +1,84 @@
+# Universal Web-to-LLM Framework .gitignore
+
+# Configuration files with API keys
+config_*.json
+
+# Downloaded documents
+downloads/
+*.pdf
+*.doc
+*.docx
+*.txt
+*.html
+*.htm
+
+# Log files
+*.log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+opm-env/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Backup files
+*.bak
+*.backup
+
+# API keys and secrets (extra safety)
+.env
+secrets.py
+api_keys.txt
+credentials.json
+
+# Test files
+test_output/
+test_downloads/
