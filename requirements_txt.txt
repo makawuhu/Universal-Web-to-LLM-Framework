@@ -1,0 +1,14 @@
+# Core dependencies for Universal Web-to-LLM Framework
+requests>=2.25.1
+beautifulsoup4>=4.9.0
+pathlib2>=2.3.5; python_version<'3.4'
+
+# Optional dependencies for enhanced functionality
+lxml>=4.6.0  # Faster XML parsing for BeautifulSoup
+urllib3>=1.26.0  # Enhanced HTTP handling
+certifi>=2021.5.25  # SSL certificate handling
+
+# Development dependencies (uncomment if contributing)
+# pytest>=6.0.0
+# black>=21.0.0
+# flake8>=3.8.0
